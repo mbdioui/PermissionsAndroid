@@ -10,9 +10,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.ActivityResultRegistry;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -23,8 +26,8 @@ import java.util.stream.Collectors;
 @SuppressLint("MissingPermission")
 public class AndroidBluetoothController implements BluetoothController, ScannedDeviceListener {
 
-    private static final String PERMISSION_BLUETOOTH_ENABLED = "enable bluetooth";
-    private static final int MY_PERMISSIONS_REQUEST_READ_LOCATION = 398129;
+    public static final int REQUEST_BLUETOOTH_PERMISSION = 212;
+    public static final int REQUEST_BLUETOOTH_SCAN = 31312;
     public static final int REQUEST_ENABLE_BT = 312;
     private final ActivityResultRegistry mActivityResultRegistry;
     BluetoothManager bluetoothManager;
@@ -114,6 +117,23 @@ public class AndroidBluetoothController implements BluetoothController, ScannedD
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 mActivity.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             }
+        }
+    }
+
+    @Override
+    public void requestBluetoothPermission() {
+        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_ADMIN}, REQUEST_BLUETOOTH_PERMISSION);
+    }
+    @Override
+    public void requestScanPermission() {
+        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN}, REQUEST_BLUETOOTH_SCAN);
         }
     }
 }

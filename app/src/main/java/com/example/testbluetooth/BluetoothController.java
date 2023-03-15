@@ -16,4 +16,8 @@ public interface BluetoothController {
     void release();
 
     void activateBluetooth();
+
+    void requestBluetoothPermission();
+
+    void requestScanPermission();
 }

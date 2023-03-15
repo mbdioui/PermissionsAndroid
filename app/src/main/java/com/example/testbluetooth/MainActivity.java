@@ -1,9 +1,9 @@
 package com.example.testbluetooth;
 
-import android.Manifest;
+import static com.example.testbluetooth.AndroidBluetoothController.REQUEST_BLUETOOTH_SCAN;
+
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -12,18 +12,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
 
 import com.example.testbluetooth.databinding.ActivityMainBinding;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private static final int REQUEST_BLUETOOTH_PERMISSION = 212;
-    private static final int REQUEST_BLUETOOTH_SCAN = 31312;
+
     private ActivityMainBinding binding;
     private AndroidBluetoothController androidBluetoothController;
 
@@ -34,8 +30,8 @@ public class MainActivity extends AppCompatActivity {
         View view = binding.getRoot();
         setContentView(view);
         androidBluetoothController = new AndroidBluetoothController(this, getActivityResultRegistry());
-        requestScanPermission();
-        requestBluetoothPermission();
+        androidBluetoothController.requestScanPermission();
+        androidBluetoothController.requestBluetoothPermission();
         androidBluetoothController.activateBluetooth();
         androidBluetoothController.startDiscovery();
         androidBluetoothController.getScannedDevicesLiveData().observe(this, observeBluetoothDevices());
@@ -43,10 +39,6 @@ public class MainActivity extends AppCompatActivity {
         binding.button.setOnClickListener(v -> {
             androidBluetoothController.stopDiscovery();
             androidBluetoothController.release();
-        });
-        binding.buttonPermission.setOnClickListener(v -> {
-            requestScanPermission();
-            requestBluetoothPermission();
         });
 
     }
@@ -64,26 +56,11 @@ public class MainActivity extends AppCompatActivity {
         androidBluetoothController.getScannedDevicesLiveData().removeObservers(this);
     }
 
-    private void requestBluetoothPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_ADMIN}, REQUEST_BLUETOOTH_PERMISSION);
-    }
-
-    private void requestScanPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN}, REQUEST_BLUETOOTH_SCAN);
-        }
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_BLUETOOTH_PERMISSION && grantResults.length > 0) {
+        if (requestCode == AndroidBluetoothController.REQUEST_BLUETOOTH_PERMISSION && grantResults.length > 0) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 androidBluetoothController.startDiscovery();
             } else {
