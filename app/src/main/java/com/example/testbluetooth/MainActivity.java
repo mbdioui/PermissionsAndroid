@@ -16,12 +16,15 @@ import androidx.lifecycle.Observer;
 
 import com.example.testbluetooth.databinding.ActivityMainBinding;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private AndroidBluetoothController androidBluetoothController;
+    private List<String> devicesNames = new ArrayList();
+    private ArrayAdapter<String> listAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,12 +32,17 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         View view = binding.getRoot();
         setContentView(view);
-        androidBluetoothController = new AndroidBluetoothController(this, getActivityResultRegistry());
+        androidBluetoothController = new AndroidBluetoothController(this);
         androidBluetoothController.requestScanPermission();
         androidBluetoothController.requestBluetoothPermission();
         androidBluetoothController.activateBluetooth();
         androidBluetoothController.startDiscovery();
         androidBluetoothController.getScannedDevicesLiveData().observe(this, observeBluetoothDevices());
+
+        listAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_list_item_1,
+                devicesNames);
+        binding.listView.setAdapter(listAdapter);
 
         binding.button.setOnClickListener(v -> {
             androidBluetoothController.stopDiscovery();
@@ -44,9 +52,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @NonNull
-    private Observer<List<String>> observeBluetoothDevices() {
-        return strings -> {
-            binding.listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, strings));
+    private Observer<List<BluetoothDeviceObject>> observeBluetoothDevices() {
+        return bluetoothDevices -> {
+            devicesNames.clear();
+            for (BluetoothDeviceObject device : bluetoothDevices) {
+                devicesNames.add(device.name);
+            }
+            listAdapter.notifyDataSetChanged();
         };
     }
 
