@@ -17,14 +17,10 @@ public class FoundDeviceReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(BluetoothDevice.ACTION_FOUND)) {
-            BluetoothDeviceObject bluetoothDevice = new BluetoothDeviceObject();
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                bluetoothDevice.name = intent.getParcelableExtra(BluetoothDevice.EXTRA_NAME, String.class);
-                bluetoothDevice.address = intent.getParcelableExtra(BluetoothDevice.EXTRA_UUID, String.class);
-            } else {
-                bluetoothDevice.name = intent.getParcelableExtra(BluetoothDevice.EXTRA_NAME);
-                bluetoothDevice.address = intent.getParcelableExtra(BluetoothDevice.EXTRA_UUID);
-            }
+            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            Short rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MAX_VALUE);
+            BluetoothDeviceObject bluetoothDevice = BluetoothDeviceMapper.toBluetoothDeviceObject(device);
+            bluetoothDevice.strength = BluetoothUtil.checkSignal(rssi);
             if (bluetoothDevice.name != null)
                 scannedDeviceListener.onScannedDevice(bluetoothDevice);
         }

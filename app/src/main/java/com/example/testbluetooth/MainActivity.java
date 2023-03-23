@@ -5,26 +5,28 @@ import static com.example.testbluetooth.AndroidBluetoothController.REQUEST_BLUET
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.testbluetooth.databinding.ActivityMainBinding;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private AndroidBluetoothController androidBluetoothController;
-    private List<String> devicesNames = new ArrayList();
-    private ArrayAdapter<String> listAdapter;
+    private Timer timer;
+    private BluetoothDeviceAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,14 +38,24 @@ public class MainActivity extends AppCompatActivity {
         androidBluetoothController.requestScanPermission();
         androidBluetoothController.requestBluetoothPermission();
         androidBluetoothController.activateBluetooth();
-        androidBluetoothController.startDiscovery();
+        //discover devices event
+        //androidBluetoothController.startDiscovery();
+
         androidBluetoothController.getScannedDevicesLiveData().observe(this, observeBluetoothDevices());
 
-        listAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1,
-                devicesNames);
-        binding.listView.setAdapter(listAdapter);
+        //already paired devices
+        //androidBluetoothController.getPairedDevices().observe(this, observeBluetoothDevices());
 
+        /*listAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_list_item_1,
+                devicesNames);*/
+        binding.listView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new BluetoothDeviceAdapter();
+        binding.listView.setAdapter(adapter);
+
+        binding.buttonPermission.setOnClickListener(v -> {
+            androidBluetoothController.startDiscovery();
+        });
         binding.button.setOnClickListener(v -> {
             androidBluetoothController.stopDiscovery();
             androidBluetoothController.release();
@@ -54,11 +66,7 @@ public class MainActivity extends AppCompatActivity {
     @NonNull
     private Observer<List<BluetoothDeviceObject>> observeBluetoothDevices() {
         return bluetoothDevices -> {
-            devicesNames.clear();
-            for (BluetoothDeviceObject device : bluetoothDevices) {
-                devicesNames.add(device.name);
-            }
-            listAdapter.notifyDataSetChanged();
+            adapter.submitList(bluetoothDevices);
         };
     }
 
@@ -66,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         androidBluetoothController.getScannedDevicesLiveData().removeObservers(this);
+        timer.cancel();
     }
 
 

@@ -15,7 +15,7 @@ public class BluetoothDeviceMapper {
         }
         BluetoothDeviceObject deviceObject = new BluetoothDeviceObject();
         deviceObject.name = device.getName();
-        deviceObject.address = device.getAddress();
+        deviceObject.address = device.getAddress().isEmpty() ? "adresse non accessible" : device.getAddress();
         return deviceObject;
     }
 }

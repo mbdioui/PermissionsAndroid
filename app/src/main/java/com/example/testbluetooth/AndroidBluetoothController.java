@@ -12,8 +12,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.ActivityResultRegistry;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
@@ -21,7 +19,6 @@ import androidx.lifecycle.MutableLiveData;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @SuppressLint("MissingPermission")
 public class AndroidBluetoothController implements BluetoothController, ScannedDeviceListener {
@@ -33,15 +30,22 @@ public class AndroidBluetoothController implements BluetoothController, ScannedD
     BluetoothAdapter bluetoothAdapter;
 
     private List<BluetoothDeviceObject> scannedDevices;
+    private List<BluetoothDeviceObject> pairedDevices;
 
 
     private MutableLiveData<List<BluetoothDeviceObject>> _scannedDevicesLiveData = new MutableLiveData();
+    private MutableLiveData<List<BluetoothDeviceObject>> _pairedDevices = new MutableLiveData();
+
+    public LiveData<List<BluetoothDeviceObject>> getPairedDevices() {
+        return _pairedDevices;
+    }
+
+    ;
 
     public LiveData<List<BluetoothDeviceObject>> getScannedDevicesLiveData() {
         return _scannedDevicesLiveData;
     }
 
-    List<BluetoothDeviceObject> pairedDevices = null;
     private Context mContext;
     private Activity mActivity;
 
@@ -54,6 +58,7 @@ public class AndroidBluetoothController implements BluetoothController, ScannedD
         bluetoothManager = applicationContext.getSystemService(BluetoothManager.class);
         bluetoothAdapter = bluetoothManager.getAdapter();
         scannedDevices = new ArrayList<>();
+        pairedDevices = new ArrayList<>();
         updatePairedDevice();
     }
 
@@ -87,9 +92,11 @@ public class AndroidBluetoothController implements BluetoothController, ScannedD
         if (!hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
             return;
         }
-        pairedDevices = new ArrayList<>();
         for (BluetoothDevice device : bluetoothAdapter.getBondedDevices()) {
-            pairedDevices.add(BluetoothDeviceMapper.toBluetoothDeviceObject(device));
+            if (device != null && !pairedDevices.contains(device)) {
+                pairedDevices.add(BluetoothDeviceMapper.toBluetoothDeviceObject(device));
+                _pairedDevices.setValue(pairedDevices);
+            }
         }
     }
 
@@ -99,7 +106,7 @@ public class AndroidBluetoothController implements BluetoothController, ScannedD
 
     @Override
     public void onScannedDevice(BluetoothDeviceObject bluetoothDevice) {
-        if (bluetoothDevice != null && !scannedDevices.contains(bluetoothDevice) ) {
+        if (bluetoothDevice != null && !scannedDevices.contains(bluetoothDevice)) {
             scannedDevices.add(bluetoothDevice);
             _scannedDevicesLiveData.setValue(scannedDevices);
         }
