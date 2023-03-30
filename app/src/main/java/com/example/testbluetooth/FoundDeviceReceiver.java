@@ -22,7 +22,7 @@ public class FoundDeviceReceiver extends BroadcastReceiver {
             BluetoothDeviceObject bluetoothDevice = BluetoothDeviceMapper.toBluetoothDeviceObject(device);
             bluetoothDevice.strength = BluetoothUtil.checkSignal(rssi);
             if (bluetoothDevice.name != null)
-                scannedDeviceListener.onScannedDevice(bluetoothDevice);
+                scannedDeviceListener.onScannedDevice(device,BluetoothUtil.checkSignal(rssi));
         }
     }
 }
