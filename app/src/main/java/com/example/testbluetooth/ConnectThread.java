@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Handler;
 import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
@@ -17,6 +18,8 @@ import java.io.InputStream;
 public class ConnectThread extends Thread {
     private BluetoothSocket mmSocket;
     private Context mContext;
+
+    private Handler handler = new Handler();
 
     private InputStream mmInStream;
     private byte[] mmBuffer; // mmBuffer store for the stream
@@ -53,8 +56,9 @@ public class ConnectThread extends Thread {
             Log.i("client socket", "connecting to bluetooth socket");
             mmSocket.connect();
 
-            MyBluetoothService.ConnectedThread connectedThread = new MyBluetoothService.ConnectedThread(mmSocket);
-            connectedThread.run();
+            MyBluetoothService bluetoothService = new MyBluetoothService();
+            MyBluetoothService.ConnectedThread thread = bluetoothService.makeClass(mmSocket, handler);
+            thread.run();
 
 
         } catch (IOException connectException) {
@@ -63,7 +67,7 @@ public class ConnectThread extends Thread {
             try {
                 mmSocket.close();
             } catch (IOException closeException) {
-                Log.e("client side thread", "Could not close the client socket", closeException);
+                Log.e("client thread", "Could not close the client socket", closeException);
             }
             return;
         }

@@ -1,4 +1,4 @@
-package com.example.testbluetooth;
+package com.example.testbluetooth.ui;
 
 import static com.example.testbluetooth.AndroidBluetoothController.REQUEST_BLUETOOTH_SCAN;
 
@@ -25,6 +25,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.testbluetooth.AndroidBluetoothController;
+import com.example.testbluetooth.BluetoothScannedDeviceAdapter;
+import com.example.testbluetooth.ConnectThread;
+import com.example.testbluetooth.OnElementClickListener;
+import com.example.testbluetooth.ServerBlueToothSocket;
 import com.example.testbluetooth.databinding.ActivityMainBinding;
 
 import java.util.List;

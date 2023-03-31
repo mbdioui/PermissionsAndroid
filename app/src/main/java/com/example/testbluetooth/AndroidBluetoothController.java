@@ -27,7 +27,7 @@ public class AndroidBluetoothController implements BluetoothController, ScannedD
     public static final int REQUEST_BLUETOOTH_SCAN = 31312;
     public static final int REQUEST_ENABLE_BT = 312;
     BluetoothManager bluetoothManager;
-    BluetoothAdapter bluetoothAdapter;
+    public BluetoothAdapter bluetoothAdapter;
 
     private List<BluetoothDevice> scannedDevices;
 
