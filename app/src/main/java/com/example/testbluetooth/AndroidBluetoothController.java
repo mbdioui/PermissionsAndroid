@@ -1,5 +1,8 @@
 package com.example.testbluetooth;
 
+import static android.bluetooth.BluetoothAdapter.ACTION_DISCOVERY_FINISHED;
+import static android.bluetooth.BluetoothAdapter.ACTION_DISCOVERY_STARTED;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -48,11 +51,12 @@ public class AndroidBluetoothController implements BluetoothController, ScannedD
     private Context mContext;
     private Activity mActivity;
 
-    private final FoundDeviceReceiver foundDeviceReceiver = new FoundDeviceReceiver(this);
+    private FoundDeviceReceiver foundDeviceReceiver ;
 
 
-    public AndroidBluetoothController(Context applicationContext) {
+    public AndroidBluetoothController(Context applicationContext,DiscoveringListener discoveringListener) {
         mContext = applicationContext;
+        foundDeviceReceiver=new FoundDeviceReceiver(this,discoveringListener);
         mActivity = (Activity) applicationContext;
         bluetoothManager = applicationContext.getSystemService(BluetoothManager.class);
         bluetoothAdapter = bluetoothManager.getAdapter();
@@ -65,6 +69,8 @@ public class AndroidBluetoothController implements BluetoothController, ScannedD
     public void startDiscovery() {
         if (hasPermission(Manifest.permission.BLUETOOTH_CONNECT) && hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
             IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+            filter.addAction(ACTION_DISCOVERY_STARTED);
+            filter.addAction(ACTION_DISCOVERY_FINISHED);
             mContext.registerReceiver(foundDeviceReceiver, filter);
             bluetoothAdapter.startDiscovery();
         }

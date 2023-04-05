@@ -4,26 +4,29 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.MainActivity">
+    tools:context=".ui.BluetoothActivity">
 
     <TextView
         android:id="@+id/textViewPaired"
+        android:layout_marginTop="8dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Paired Devices"
         app:layout_constraintBottom_toTopOf="@+id/PairedList"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+         />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/PairedList"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="250dp"
         app:layout_constraintBottom_toTopOf="@+id/textViewScanned"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewPaired" />
+        app:layout_constraintTop_toBottomOf="@id/textViewPaired"
+        />
 
     <TextView
         android:id="@+id/textViewScanned"
@@ -33,18 +36,17 @@
         app:layout_constraintBottom_toTopOf="@+id/scan_list"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/PairedList"
+        />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/scan_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="250dp"
         app:layout_constraintBottom_toTopOf="@+id/button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewScanned"
-        app:layout_constraintVertical_bias="1.0"
-        app:layout_constraintVertical_chainStyle="packed" />
+        app:layout_constraintTop_toBottomOf="@id/textViewScanned" />
 
 
     <Button
@@ -62,6 +64,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Scan Devices"
+        app:layout_constraintBaseline_toBaselineOf="@id/button"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/button"

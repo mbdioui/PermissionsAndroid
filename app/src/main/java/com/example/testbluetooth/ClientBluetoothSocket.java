@@ -15,22 +15,23 @@ import androidx.core.app.ActivityCompat;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class ConnectThread extends Thread {
+public class ClientBluetoothSocket extends Thread {
     private BluetoothSocket mmSocket;
     private Context mContext;
 
-    private Handler handler = new Handler();
+    private Handler handler;
 
     private InputStream mmInStream;
     private byte[] mmBuffer; // mmBuffer store for the stream
     private final BluetoothAdapter mmBluetoothAdapter;
 
-    public ConnectThread(BluetoothDevice device, BluetoothAdapter bluetoothAdapter, Context context) {
+    public ClientBluetoothSocket(BluetoothDevice device, BluetoothAdapter bluetoothAdapter, Context context,Handler handler) {
         // Use a temporary object that is later assigned to mmSocket
         // because mmSocket is final.
         Log.i("client socket", "creating rf common socket");
         BluetoothSocket tmp = null;
         mmBluetoothAdapter = bluetoothAdapter;
+        this.handler = handler;
         this.mContext = context;
         try {
             Log.i("client socket", "creating rf common socket");

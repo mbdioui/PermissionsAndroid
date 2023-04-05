@@ -14,6 +14,7 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -27,7 +28,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.testbluetooth.AndroidBluetoothController;
 import com.example.testbluetooth.BluetoothScannedDeviceAdapter;
-import com.example.testbluetooth.ConnectThread;
+import com.example.testbluetooth.ClientBluetoothSocket;
+import com.example.testbluetooth.DiscoveringListener;
 import com.example.testbluetooth.OnElementClickListener;
 import com.example.testbluetooth.ServerBlueToothSocket;
 import com.example.testbluetooth.databinding.ActivityMainBinding;
@@ -35,13 +37,17 @@ import com.example.testbluetooth.databinding.ActivityMainBinding;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-public class MainActivity extends AppCompatActivity implements OnElementClickListener {
+public class BluetoothActivity extends AppCompatActivity implements OnElementClickListener, DiscoveringListener {
 
     private ActivityMainBinding binding;
     private AndroidBluetoothController androidBluetoothController;
     private BluetoothScannedDeviceAdapter adapter;
+
+    private Handler handler;
     private int SELECT_DEVICE_REQUEST_CODE = 54646554;
     private BluetoothScannedDeviceAdapter pairedListAdapter;
+
+    private BluetoothPresenter activityPresenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +55,13 @@ public class MainActivity extends AppCompatActivity implements OnElementClickLis
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         View view = binding.getRoot();
         setContentView(view);
-        androidBluetoothController = new AndroidBluetoothController(this);
+
+        handler = new Handler(msg -> {
+            Toast.makeText(this, msg.obj.toString(), Toast.LENGTH_SHORT).show();
+            return true;
+        });
+
+        androidBluetoothController = new AndroidBluetoothController(this,this);
         androidBluetoothController.requestScanPermission();
         androidBluetoothController.requestBluetoothPermission();
         androidBluetoothController.activateBluetooth();
@@ -83,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements OnElementClickLis
         });
 
         androidBluetoothController.PairedDevicesLD.observe(this, bluetoothDevices -> pairedListAdapter.submitList(bluetoothDevices));
-
     }
 
     @NonNull
@@ -163,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements OnElementClickLis
             return;
         }
         if (androidBluetoothController.bluetoothAdapter.getBondedDevices().contains(bluetoothDevice)) {
-            ConnectThread connectThread = new ConnectThread(bluetoothDevice, androidBluetoothController.bluetoothAdapter, this);
+            ClientBluetoothSocket connectThread = new ClientBluetoothSocket(bluetoothDevice, androidBluetoothController.bluetoothAdapter, this, handler);
             connectThread.start();
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -213,5 +224,13 @@ public class MainActivity extends AppCompatActivity implements OnElementClickLis
         }
     }
 
+    @Override
+    public void onDiscovery() {
+        Toast.makeText(this, "Device discovery", Toast.LENGTH_SHORT).show();
+    }
 
+    @Override
+    public void onStopDiscovery() {
+        Toast.makeText(this, "Device stop discovery", Toast.LENGTH_SHORT).show();
+    }
 }

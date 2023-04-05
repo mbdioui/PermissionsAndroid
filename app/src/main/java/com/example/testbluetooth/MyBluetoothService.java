@@ -1,7 +1,6 @@
 package com.example.testbluetooth;
 
 import android.bluetooth.BluetoothSocket;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -17,11 +16,9 @@ public class MyBluetoothService {
     // Defines several constants used when transmitting messages between the
     // service and the UI.
     private interface MessageConstants {
-        public static final int MESSAGE_READ = 0;
-        public static final int MESSAGE_WRITE = 1;
-        public static final int MESSAGE_TOAST = 2;
-
-        // ... (Add other message types here as needed.)
+        int MESSAGE_READ = 0;
+        int MESSAGE_WRITE = 1;
+        int MESSAGE_TOAST = 2;
     }
 
     public ConnectedThread makeClass(BluetoothSocket socket, Handler handler) {
@@ -29,14 +26,12 @@ public class MyBluetoothService {
     }
 
     public class ConnectedThread extends Thread {
-        private final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
         private Handler mmHandler;
         private byte[] mmBuffer; // mmBuffer store for the stream
 
         public ConnectedThread(BluetoothSocket socket, Handler handler) {
-            mmSocket = socket;
             mmHandler = handler;
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
@@ -71,7 +66,7 @@ public class MyBluetoothService {
                     // Send the obtained bytes to the UI activity.
                     Message readMsg = mmHandler.obtainMessage(
                             MessageConstants.MESSAGE_READ, numBytes, -1,
-                            mmBuffer);
+                            readMessage);
                     readMsg.sendToTarget();
                     if (readMsg != null)
                         Log.i("read message", readMessage);
@@ -83,7 +78,7 @@ public class MyBluetoothService {
         }
 
         // Call this from the main activity to send data to the remote device.
-        public void write(byte[] bytes) {
+       /* public void write(byte[] bytes) {
             try {
                 mmOutStream.write(bytes);
 
@@ -112,6 +107,6 @@ public class MyBluetoothService {
             } catch (IOException e) {
                 Log.e(TAG, "Could not close the connect socket", e);
             }
-        }
+        }*/
     }
 }
