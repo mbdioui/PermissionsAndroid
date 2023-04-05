@@ -37,7 +37,7 @@ public class ServerBlueToothSocket extends Thread {
     }
 
     public void run() {
-        BluetoothSocket socket = null;
+        BluetoothSocket socket;
         // Keep listening until exception occurs or a socket is returned.
         while (true) {
             try {
