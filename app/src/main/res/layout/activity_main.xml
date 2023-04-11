@@ -43,31 +43,31 @@
         android:id="@+id/scan_list"
         android:layout_width="match_parent"
         android:layout_height="250dp"
-        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintBottom_toTopOf="@+id/button_stop_scan"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textViewScanned" />
 
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/button_stop_scan"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="stop"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/button_permission"
+        app:layout_constraintEnd_toStartOf="@id/button_scan"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/scan_list" />
 
     <Button
-        android:id="@+id/button_permission"
+        android:id="@+id/button_scan"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Scan Devices"
-        app:layout_constraintBaseline_toBaselineOf="@id/button"
+        app:layout_constraintBaseline_toBaselineOf="@id/button_stop_scan"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/button"
+        app:layout_constraintStart_toEndOf="@id/button_stop_scan"
         app:layout_constraintTop_toBottomOf="@id/scan_list" />
 
 

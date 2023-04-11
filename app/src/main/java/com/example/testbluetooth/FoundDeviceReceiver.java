@@ -1,5 +1,6 @@
 package com.example.testbluetooth;
 
+import static android.bluetooth.BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED;
 import static android.bluetooth.BluetoothAdapter.ACTION_DISCOVERY_FINISHED;
 import static android.bluetooth.BluetoothAdapter.ACTION_DISCOVERY_STARTED;
 
@@ -38,6 +39,10 @@ public class FoundDeviceReceiver extends BroadcastReceiver {
             }
             case ACTION_DISCOVERY_FINISHED: {
                 discoveringListener.onStopDiscovery();
+                break;
+            }
+            case ACTION_CONNECTION_STATE_CHANGED:{
+                discoveringListener.onConnectionState();
                 break;
             }
             default:

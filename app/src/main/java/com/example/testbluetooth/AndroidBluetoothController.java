@@ -1,5 +1,6 @@
 package com.example.testbluetooth;
 
+import static android.bluetooth.BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED;
 import static android.bluetooth.BluetoothAdapter.ACTION_DISCOVERY_FINISHED;
 import static android.bluetooth.BluetoothAdapter.ACTION_DISCOVERY_STARTED;
 
@@ -39,14 +40,10 @@ public class AndroidBluetoothController implements BluetoothController, ScannedD
     private MutableLiveData<List<BluetoothDevice>> _pairedDevices = new MutableLiveData();
 
 
-    public LiveData<List<BluetoothDevice>> PairedDevicesLD = _pairedDevices;
+    public LiveData<List<BluetoothDevice>> pairedDevicesLD = _pairedDevices;
+    public LiveData<List<BluetoothDevice>> scannedDevicesLD = _scannedDevicesLiveData;
 
 
-    ;
-
-    public LiveData<List<BluetoothDevice>> getScannedDevicesLiveData() {
-        return _scannedDevicesLiveData;
-    }
 
     private Context mContext;
     private Activity mActivity;
@@ -71,6 +68,7 @@ public class AndroidBluetoothController implements BluetoothController, ScannedD
             IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
             filter.addAction(ACTION_DISCOVERY_STARTED);
             filter.addAction(ACTION_DISCOVERY_FINISHED);
+            filter.addAction(ACTION_CONNECTION_STATE_CHANGED);
             mContext.registerReceiver(foundDeviceReceiver, filter);
             bluetoothAdapter.startDiscovery();
         }
@@ -121,7 +119,6 @@ public class AndroidBluetoothController implements BluetoothController, ScannedD
     @Override
     public void activateBluetooth() {
         if (!bluetoothAdapter.isEnabled()) {
-            // Demander à l'utilisateur d'activer le Bluetooth
             if (hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 mActivity.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
