@@ -9,14 +9,15 @@ public class BluetoothDeviceMapper {
 
     @SuppressLint("MissingPermission")
     @Nullable
-    static public BluetoothDeviceObject toBluetoothDeviceObject(BluetoothDevice device,StrengthSignal strengthSignal) {
+    static public BluetoothDeviceObject toBluetoothDeviceObject(BluetoothDevice device, @Nullable StrengthSignal strengthSignal) {
         if (device == null) {
             return null;
         }
         BluetoothDeviceObject deviceObject = new BluetoothDeviceObject();
         deviceObject.name = device.getName();
         deviceObject.address = device.getAddress().isEmpty() ? "adresse non accessible" : device.getAddress();
-        deviceObject.strength = strengthSignal;
+        if (strengthSignal != null)
+            deviceObject.strength = strengthSignal;
         return deviceObject;
     }
 }

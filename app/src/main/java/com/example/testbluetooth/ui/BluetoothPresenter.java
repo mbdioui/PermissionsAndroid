@@ -10,12 +10,10 @@ import android.content.Context;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.LiveData;
 
@@ -24,26 +22,28 @@ import com.example.testbluetooth.ClientBluetoothSocket;
 import com.example.testbluetooth.DiscoveringListener;
 import com.example.testbluetooth.OnElementClickListener;
 import com.example.testbluetooth.ServerBlueToothSocket;
-import com.example.testbluetooth.databinding.ActivityMainBinding;
 
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.regex.Pattern;
 
 public class BluetoothPresenter implements BluetoothPresenterInterface, DiscoveringListener, OnElementClickListener {
-    private IView viewContext;
+    private IView bluetoothView;
 
     private Handler handler;
 
     public int SELECT_DEVICE_REQUEST_CODE = 54646554;
     private AndroidBluetoothController androidBluetoothController;
 
+    private ServerBlueToothSocket serverSocket;
+    private ClientBluetoothSocket clientSocket;
+
 
     BluetoothPresenter(Handler handler, IView context) {
-        viewContext = context;
+        bluetoothView = context;
         this.handler = handler;
 
-        androidBluetoothController = new AndroidBluetoothController((Context) viewContext, this);
+        androidBluetoothController = new AndroidBluetoothController((Context) bluetoothView, this);
         androidBluetoothController.requestScanPermission();
         androidBluetoothController.requestBluetoothPermission();
         androidBluetoothController.activateBluetooth();
@@ -77,72 +77,91 @@ public class BluetoothPresenter implements BluetoothPresenterInterface, Discover
 
     @Override
     public void onBlueToothDeviceClick(BluetoothDevice bluetoothDevice, Handler handler) {
-        if (ActivityCompat.checkSelfPermission((Context) viewContext, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission((Context) bluetoothView, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            bluetoothView.PermissionNotAccorded();
             return;
         }
         androidBluetoothController.stopDiscovery();
-        Log.i("BluetoothPresenter", "asking device " + bluetoothDevice.getName() + " to pair/to connect");
+
         if (androidBluetoothController.bluetoothAdapter.getBondedDevices().contains(bluetoothDevice)) {
-            ClientBluetoothSocket connectThread = new ClientBluetoothSocket(bluetoothDevice, androidBluetoothController.bluetoothAdapter, (Context) viewContext, handler);
-            connectThread.start();
+            if (clientSocket == null) {
+                clientSocket = new ClientBluetoothSocket(bluetoothDevice, androidBluetoothController.bluetoothAdapter, (Context) bluetoothView, handler);
+                clientSocket.start();
+            }
+
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                BluetoothDeviceFilter deviceFilter = new BluetoothDeviceFilter.Builder()
-                        .setNamePattern(Pattern.compile("S21 FE de Mohamed Salah"))
-                        .build();
-                AssociationRequest pairingRequest = new AssociationRequest.Builder()
-                        .addDeviceFilter(deviceFilter)
-                        .setSingleDevice(true)
-                        .build();
-                Context context = (Context) viewContext;
+            handlePairingRequest();
+        }
+    }
 
-                CompanionDeviceManager deviceManager =
-                        (CompanionDeviceManager) context.getSystemService(Context.COMPANION_DEVICE_SERVICE);
+    private void handlePairingRequest() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            BluetoothDeviceFilter deviceFilter = new BluetoothDeviceFilter.Builder()
+                    .setNamePattern(Pattern.compile("OBID"))
+                    .build();
+            AssociationRequest pairingRequest = new AssociationRequest.Builder()
+                    .addDeviceFilter(deviceFilter)
+                    .setSingleDevice(true)
+                    .build();
+            Context context = (Context) bluetoothView;
 
-                Executor executor = Runnable::run;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    deviceManager.associate(pairingRequest, executor, new CompanionDeviceManager.Callback() {
+            CompanionDeviceManager deviceManager =
+                    (CompanionDeviceManager) context.getSystemService(Context.COMPANION_DEVICE_SERVICE);
 
-                        @Override
-                        public void onDeviceFound(IntentSender chooserLauncher) {
-                            Log.i("MainActivity", "on device found");
-                            viewContext.startPairingRequest(chooserLauncher);
-                        }
+            Executor executor = Runnable::run;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                deviceManager.associate(pairingRequest, executor, new CompanionDeviceManager.Callback() {
 
-                        @Override
-                        public void onAssociationCreated(AssociationInfo associationInfo) {
-                            Log.e("MainActivity", "Association created" + associationInfo.toString());
-                        }
+                    @Override
+                    public void onDeviceFound(IntentSender chooserLauncher) {
+                        Log.i("MainActivity", "on device found");
+                        bluetoothView.startPairingRequest(chooserLauncher);
+                    }
 
-                        @Override
-                        public void onFailure(CharSequence errorMessage) {
-                            Log.e("MainActivity", "Failed to associate");
-                        }
-                    });
-                }
+                    @Override
+                    public void onAssociationCreated(AssociationInfo associationInfo) {
+                        Log.e("MainActivity", "Association created" + associationInfo.toString());
+                    }
+
+                    @Override
+                    public void onFailure(CharSequence errorMessage) {
+                        Log.e("MainActivity", "Failed to associate");
+                    }
+                });
             }
         }
     }
 
     @Override
     public void onDiscovery() {
-        Toast.makeText((Context) viewContext, "Discovery mode On", Toast.LENGTH_SHORT).show();
+        Toast.makeText((Context) bluetoothView, "Discovery mode On", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onStopDiscovery() {
-        Toast.makeText((Context) viewContext, "Discovery mode Off", Toast.LENGTH_SHORT).show();
+        Toast.makeText((Context) bluetoothView, "Discovery mode Off", Toast.LENGTH_SHORT).show();
         updatePairedDevices();
     }
 
     @Override
     public void onConnectionState() {
         updatePairedDevices();
+        bluetoothView.showConnectionInfo("Bluetooth turned off");
+    }
+
+    @Override
+    public void deviceConnected() {
+       bluetoothView.showConnectionInfo("device connected");
+    }
+
+    @Override
+    public void deviceDisconnected() {
+        bluetoothView.showConnectionInfo("device disconnected");
     }
 
     @Override
     public void startSocketServer() {
-        ServerBlueToothSocket serverSocket = new ServerBlueToothSocket(androidBluetoothController.bluetoothAdapter, (Context) viewContext);
+        serverSocket = new ServerBlueToothSocket(androidBluetoothController.bluetoothAdapter, (Context) bluetoothView);
         serverSocket.start();
     }
 
@@ -155,4 +174,12 @@ public class BluetoothPresenter implements BluetoothPresenterInterface, Discover
     public void onclick(BluetoothDevice bluetoothDevice) {
         onBlueToothDeviceClick(bluetoothDevice, handler);
     }
+
+    @Override
+    public void closeSockets() {
+        if (clientSocket != null)
+            clientSocket.cancel();
+        serverSocket.cancel();
+    }
+
 }

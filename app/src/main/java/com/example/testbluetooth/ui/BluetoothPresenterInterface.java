@@ -24,4 +24,6 @@ public interface BluetoothPresenterInterface {
     void activateBluetooth();
 
     void updatePairedDevices();
+
+    void closeSockets();
 }

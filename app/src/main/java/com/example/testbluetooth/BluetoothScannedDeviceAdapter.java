@@ -30,9 +30,6 @@ public class BluetoothScannedDeviceAdapter extends RecyclerView.Adapter<Bluetoot
         this.onElementClickListener = onElementClickListener;
     }
 
-    private BluetoothScannedDeviceAdapter() {
-        super();
-    }
 
     public void submitList(List<BluetoothDevice> bluetoothDevices) {
         this.bluetoothDevices = bluetoothDevices;
@@ -46,10 +43,10 @@ public class BluetoothScannedDeviceAdapter extends RecyclerView.Adapter<Bluetoot
         BluetoothDevice bluetoothDevice = bluetoothDevices.get(position);
         holder.binding.bluetoothName.setText(bluetoothDevice.getName());
         holder.binding.bluetoothUdid.setText(bluetoothDevice.getAddress());
-        holder.binding.getRoot().setOnClickListener(onClickEvent(holder, bluetoothDevice));
+        holder.binding.getRoot().setOnClickListener(onClickEvent(bluetoothDevice));
     }
 
-    private View.OnClickListener onClickEvent(BluetoothDeviceVH holder, BluetoothDevice bluetoothDevice) {
+    private View.OnClickListener onClickEvent( BluetoothDevice bluetoothDevice) {
         return v -> onElementClickListener.onclick(bluetoothDevice);
     }
 

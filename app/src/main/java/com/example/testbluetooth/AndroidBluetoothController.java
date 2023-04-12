@@ -21,6 +21,8 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.testbluetooth.Broadcast.FoundDeviceReceiver;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,6 +71,8 @@ public class AndroidBluetoothController implements BluetoothController, ScannedD
             filter.addAction(ACTION_DISCOVERY_STARTED);
             filter.addAction(ACTION_DISCOVERY_FINISHED);
             filter.addAction(ACTION_CONNECTION_STATE_CHANGED);
+            //filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+            //filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
             mContext.registerReceiver(foundDeviceReceiver, filter);
             bluetoothAdapter.startDiscovery();
         }

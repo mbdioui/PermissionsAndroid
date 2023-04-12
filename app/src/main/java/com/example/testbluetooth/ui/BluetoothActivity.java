@@ -48,13 +48,24 @@ public class BluetoothActivity extends AppCompatActivity implements IView {
     }
 
     @Override
+    public void showConnectionInfo(String message) {
+        Toast.makeText(this,message,Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void PermissionNotAccorded() {
+        Toast.makeText(this,"Please verify that the permissions has been accorded",Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         handler = new Handler(msg -> {
-            Toast.makeText(this, msg.obj.toString(), Toast.LENGTH_SHORT).show();
+            Bundle b = msg.getData();
+            binding.textViewScanned.setText(b.getString("code"));
             return true;
         });
 
@@ -85,6 +96,7 @@ public class BluetoothActivity extends AppCompatActivity implements IView {
         super.onDestroy();
         activityPresenter.getPairedDeviceLD().removeObservers(this);
         activityPresenter.getScannedDeviceLD().removeObservers(this);
+        activityPresenter.closeSockets();
     }
 
 
@@ -112,29 +124,37 @@ public class BluetoothActivity extends AppCompatActivity implements IView {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == AndroidBluetoothController.REQUEST_ENABLE_BT) {
-            if (resultCode == RESULT_OK) {
-                activityPresenter.startDiscovery();
-                activityPresenter.updatePairedDevices();
-            }
+            handleAcceptEnableBluetooth(resultCode);
         }
         if (requestCode == activityPresenter.SELECT_DEVICE_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK && data != null) {
-                BluetoothDevice deviceToPair = null;
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    deviceToPair = data.getParcelableExtra(
-                            CompanionDeviceManager.EXTRA_DEVICE
-                    );
-                }
-
-                if (deviceToPair != null) {
-                    if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                        return;
-                    }
-                    deviceToPair.createBond();
-                }
-            }
+            handleRequestPairing(resultCode, data);
         } else {
             super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    private void handleRequestPairing(int resultCode, @Nullable Intent data) {
+        if (resultCode == Activity.RESULT_OK && data != null) {
+            BluetoothDevice deviceToPair = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                deviceToPair = data.getParcelableExtra(
+                        CompanionDeviceManager.EXTRA_DEVICE
+                );
+            }
+
+            if (deviceToPair != null) {
+                if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
+                deviceToPair.createBond();
+            }
+        }
+    }
+
+    private void handleAcceptEnableBluetooth(int resultCode) {
+        if (resultCode == RESULT_OK) {
+            activityPresenter.startDiscovery();
+            activityPresenter.updatePairedDevices();
         }
     }
 
@@ -147,6 +167,12 @@ public class BluetoothActivity extends AppCompatActivity implements IView {
     @Override
     public void stopDiscovery() {
         activityPresenter.stopDiscovery();
+    }
+
+    @Override
+    protected void onResume() {
+        activityPresenter.updatePairedDevices();
+        super.onResume();
     }
 
     @Override

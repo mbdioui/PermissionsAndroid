@@ -7,4 +7,7 @@ public interface DiscoveringListener {
    void onStopDiscovery();
    void onConnectionState();
 
+   void deviceConnected();
+   void deviceDisconnected();
+
 }

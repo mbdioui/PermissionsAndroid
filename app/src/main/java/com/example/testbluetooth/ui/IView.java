@@ -10,4 +10,8 @@ public interface IView {
     void bluetoothDeviceClick(BluetoothDevice bluetoothDevice);
 
     void startPairingRequest(IntentSender chooserLauncher);
+
+    void showConnectionInfo(String device_connected);
+
+    void PermissionNotAccorded();
 }

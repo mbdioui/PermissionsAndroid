@@ -48,9 +48,11 @@ public class ServerBlueToothSocket extends Thread {
                 break;
             }
             if (socket != null) {
-                // A connection was accepted. Perform work associated with
-                // the connection in a separate thread.
-                //mmServerSocket.close();
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
                 break;
             }
         }

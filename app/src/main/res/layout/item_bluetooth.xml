@@ -37,7 +37,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/bluetooth_udid"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/bluetooth_name"
-        app:srcCompat="@drawable/good_signal" />
+        app:srcCompat="@drawable/useless_signal" />
 
     <View
         android:id="@+id/divider"
