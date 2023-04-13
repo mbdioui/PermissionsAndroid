@@ -171,6 +171,7 @@ public class BluetoothActivity extends AppCompatActivity implements IView {
 
     @Override
     protected void onResume() {
+        Log.i("activity","onResume");
         activityPresenter.updatePairedDevices();
         super.onResume();
     }
