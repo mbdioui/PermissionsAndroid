@@ -8,6 +8,8 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Scanner;
 
 public class MyBluetoothService {
     private static final String TAG = "MY_APP_DEBUG_TAG";
@@ -46,26 +48,21 @@ public class MyBluetoothService {
             int numBytes; // bytes returned from read()
             Log.d(TAG, "Thread  "+this.getId());
             while (connected) {
-                try {
-                    // Read from the InputStream.
-                    if(mmInStream!=null){
-                        numBytes = mmInStream.read(mmBuffer);
-                        String readMessage = new String(mmBuffer, 0, numBytes);
-                        Message message = new Message();
-                        Bundle bundle = new Bundle();
-                        bundle.putString("code", readMessage);
-                        message.setData(bundle);
-                        // Send the obtained bytes to the UI activity.
-                        mmHandler.sendMessage(message);
-                    }
-                } catch (IOException e) {
-                    Log.d(TAG, "Input stream was disconnected", e);
+                // Read from the InputStream.
+                if(mmInStream!=null){
+                    InputStreamReader isReader = new InputStreamReader(mmInStream);
+                    char charArray[] = new char[(int) 18];
                     try {
-                        mSocket.close();
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
+                       isReader.read(charArray);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
-                    break;
+                    Message message = new Message();
+                    Bundle bundle = new Bundle();
+                    bundle.putString("code", String.valueOf(charArray));
+                    message.setData(bundle);
+                    // Send the obtained bytes to the UI activity.
+                    mmHandler.sendMessage(message);
                 }
             }
         }
