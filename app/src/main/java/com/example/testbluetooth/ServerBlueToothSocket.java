@@ -1,6 +1,5 @@
 package com.example.testbluetooth;
 
-import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
@@ -26,10 +25,10 @@ public class ServerBlueToothSocket extends Thread {
 
         try {
             if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                return ;
+                return;
             }
             tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord(name, DEFAULT_SPP_UUID);
-            Log.i("server socket","listening server side");
+            Log.i("server socket", "listening server side");
         } catch (IOException e) {
             Log.e("ACCEPT bluetooth Thread", "Socket's listen() method failed", e);
         }
@@ -37,16 +36,17 @@ public class ServerBlueToothSocket extends Thread {
     }
 
     public void run() {
-        BluetoothSocket socket;
+        BluetoothSocket socket = null;
         // Keep listening until exception occurs or a socket is returned.
         while (true) {
-            try {
-                Log.i("server socket","accepting bluetooth sockets communications");
-                socket = mmServerSocket.accept();
-            } catch (IOException e) {
-                Log.e("ACCEPT bluetooth Thread", "Socket's accept() method failed", e);
-                break;
-            }
+            if (mmServerSocket != null)
+                try {
+                    Log.i("server socket", "accepting bluetooth sockets communications");
+                    socket = mmServerSocket.accept();
+                } catch (IOException e) {
+                    Log.e("ACCEPT bluetooth Thread", "Socket's accept() method failed", e);
+                    break;
+                }
             if (socket != null) {
                 try {
                     socket.close();

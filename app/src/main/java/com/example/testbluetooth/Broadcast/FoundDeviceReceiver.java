@@ -1,10 +1,8 @@
 package com.example.testbluetooth.Broadcast;
 
-import static android.bluetooth.BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED;
 import static android.bluetooth.BluetoothAdapter.ACTION_DISCOVERY_FINISHED;
 import static android.bluetooth.BluetoothAdapter.ACTION_DISCOVERY_STARTED;
 
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -49,20 +47,12 @@ public class FoundDeviceReceiver extends BroadcastReceiver {
                 discoveringListener.onStopDiscovery();
                 break;
             }
-            case ACTION_CONNECTION_STATE_CHANGED: {
-                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
-                        BluetoothAdapter.ERROR);
-                switch (state) {
-                    case BluetoothAdapter.STATE_CONNECTED:
-                        discoveringListener.deviceConnected();
-                        break;
-                    case BluetoothAdapter.STATE_DISCONNECTED:
-                        discoveringListener.deviceDisconnected();
-                        break;
-                    case BluetoothAdapter.STATE_OFF:
-                        discoveringListener.onConnectionState();
-                        break;
-                }
+            case BluetoothDevice.ACTION_ACL_CONNECTED: {
+                discoveringListener.deviceConnected();
+                break;
+            }
+            case BluetoothDevice.ACTION_ACL_DISCONNECTED: {
+                discoveringListener.deviceDisconnected();
                 break;
             }
             default:

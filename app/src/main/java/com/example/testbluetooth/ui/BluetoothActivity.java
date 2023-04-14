@@ -8,11 +8,17 @@ import android.companion.CompanionDeviceManager;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.IntentSenderRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -34,27 +40,35 @@ public class BluetoothActivity extends AppCompatActivity implements IView {
     private BluetoothScannedDeviceAdapter pairedListAdapter;
 
     private BluetoothPresenter activityPresenter;
+    private String TAG = "BluetoothActivity";
+
+    private ActivityResultLauncher requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(), (activityResult) -> {
+                handleRequestPairing(activityResult.getResultCode(), activityResult.getData());
+            });
+
 
     @Override
     public void startPairingRequest(IntentSender chooserLauncher) {
+
         try {
+            IntentSenderRequest newRequest = new IntentSenderRequest.Builder(chooserLauncher).build();
+            requestPermissionLauncher.launch(newRequest);
             Log.i("MainActivity", chooserLauncher.getCreatorUserHandle().toString());
-            startIntentSenderForResult(
-                    chooserLauncher, activityPresenter.SELECT_DEVICE_REQUEST_CODE, null, 0, 0, 0, new Bundle()
-            );
-        } catch (IntentSender.SendIntentException e) {
-            Log.e("MainActivity", "Failed to send intent");
+
+        } catch (Exception e) {
+            Log.e("request permission",e.toString());
         }
     }
 
     @Override
     public void showConnectionInfo(String message) {
-        Toast.makeText(this,message,Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void PermissionNotAccorded() {
-        Toast.makeText(this,"Please verify that the permissions has been accorded",Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Please verify that the permissions has been accorded", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -63,9 +77,12 @@ public class BluetoothActivity extends AppCompatActivity implements IView {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        Log.i(TAG, "on create activity");
+
         handler = new Handler(msg -> {
             Bundle b = msg.getData();
             binding.textViewScanned.setText(b.getString("code"));
+            Log.i(TAG,"data retreived"+b.getString("code"));
             return true;
         });
 
@@ -88,7 +105,6 @@ public class BluetoothActivity extends AppCompatActivity implements IView {
 
         activityPresenter.getPairedDeviceLD().observe(this, bluetoothDevices -> pairedListAdapter.submitList(bluetoothDevices));
     }
-
 
 
     @Override
@@ -126,11 +142,6 @@ public class BluetoothActivity extends AppCompatActivity implements IView {
         if (requestCode == AndroidBluetoothController.REQUEST_ENABLE_BT) {
             handleAcceptEnableBluetooth(resultCode);
         }
-        if (requestCode == activityPresenter.SELECT_DEVICE_REQUEST_CODE) {
-            handleRequestPairing(resultCode, data);
-        } else {
-            super.onActivityResult(requestCode, resultCode, data);
-        }
     }
 
     private void handleRequestPairing(int resultCode, @Nullable Intent data) {
@@ -141,7 +152,6 @@ public class BluetoothActivity extends AppCompatActivity implements IView {
                         CompanionDeviceManager.EXTRA_DEVICE
                 );
             }
-
             if (deviceToPair != null) {
                 if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                     return;
@@ -160,6 +170,19 @@ public class BluetoothActivity extends AppCompatActivity implements IView {
 
 
     @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        binding.getRoot().requestLayout();
+    }
+
+    @Nullable
+    @Override
+    public View getCurrentFocus() {
+        Log.i("focus",super.getCurrentFocus().toString());
+        return super.getCurrentFocus();
+    }
+
+    @Override
     public void startDiscovery() {
         activityPresenter.startDiscovery();
     }
@@ -170,14 +193,21 @@ public class BluetoothActivity extends AppCompatActivity implements IView {
     }
 
     @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        binding.PairedList.clearFocus();
+        super.onConfigurationChanged(newConfig);
+        Log.i("config", "configuration changes" + newConfig);
+    }
+
+    @Override
     protected void onResume() {
-        Log.i("activity","onResume");
+        Log.i("activity", "onResume");
         activityPresenter.updatePairedDevices();
         super.onResume();
     }
 
     @Override
     public void bluetoothDeviceClick(BluetoothDevice bluetoothDevice) {
-        activityPresenter.onBlueToothDeviceClick(bluetoothDevice,handler);
+        activityPresenter.onBlueToothDeviceClick(bluetoothDevice, handler);
     }
 }

@@ -1,20 +1,16 @@
 package com.example.testbluetooth;
 
-import static com.example.testbluetooth.ServerBlueToothSocket.DEFAULT_SPP_UUID;
-
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 public class ClientBluetoothSocket extends Thread {
     private BluetoothSocket mmSocket;
@@ -43,7 +39,7 @@ public class ClientBluetoothSocket extends Thread {
                 return;
             }
             //tmp = bluetoothAdapter.getRemoteDevice(device.getAddress()).createInsecureRfcommSocketToServiceRecord(DEFAULT_SPP_UUID);
-           // tmp = device.createInsecureRfcommSocketToServiceRecord(DEFAULT_SPP_UUID);
+            // tmp = device.createInsecureRfcommSocketToServiceRecord(DEFAULT_SPP_UUID);
             tmp = device.createRfcommSocketToServiceRecord(ServerBlueToothSocket.DEFAULT_SPP_UUID);
         } catch (IOException e) {
             Log.e("client side thread", "Socket's create() method failed", e);
@@ -77,8 +73,10 @@ public class ClientBluetoothSocket extends Thread {
     }
 
     // Closes the client socket and causes the thread to finish.
-    public  void cancel() {
+    public void cancel() {
         try {
+            if (mInputStreamThread != null)
+                mInputStreamThread.cancel();
             mmSocket.close();
         } catch (IOException e) {
             throw new RuntimeException(e);

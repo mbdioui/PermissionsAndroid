@@ -88,6 +88,10 @@ public class BluetoothPresenter implements BluetoothPresenterInterface, Discover
                 clientSocket = new ClientBluetoothSocket(bluetoothDevice, androidBluetoothController.bluetoothAdapter, (Context) bluetoothView, handler);
                 clientSocket.start();
             }
+            else{
+                clientSocket.cancel();
+                clientSocket = null;
+            }
 
         } else {
             handlePairingRequest();
@@ -151,7 +155,8 @@ public class BluetoothPresenter implements BluetoothPresenterInterface, Discover
 
     @Override
     public void deviceConnected() {
-       bluetoothView.showConnectionInfo("device connected");
+        updatePairedDevices();
+        bluetoothView.showConnectionInfo("device connected");
     }
 
     @Override

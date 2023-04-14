@@ -3,6 +3,7 @@ package com.example.testbluetooth;
 import static android.bluetooth.BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED;
 import static android.bluetooth.BluetoothAdapter.ACTION_DISCOVERY_FINISHED;
 import static android.bluetooth.BluetoothAdapter.ACTION_DISCOVERY_STARTED;
+import static android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -16,6 +17,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 
+import androidx.activity.result.contract.ActivityResultContract;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
@@ -61,19 +63,19 @@ public class AndroidBluetoothController implements BluetoothController, ScannedD
         bluetoothAdapter = bluetoothManager.getAdapter();
         scannedDevices = new ArrayList<>();
         updatePairedDevice();
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(ACTION_DISCOVERY_STARTED);
+        filter.addAction(ACTION_DISCOVERY_FINISHED);
+        filter.addAction(ACTION_STATE_CHANGED);
+        filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        mContext.registerReceiver(foundDeviceReceiver, filter);
     }
 
 
     @Override
     public void startDiscovery() {
         if (hasPermission(Manifest.permission.BLUETOOTH_CONNECT) && hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
-            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-            filter.addAction(ACTION_DISCOVERY_STARTED);
-            filter.addAction(ACTION_DISCOVERY_FINISHED);
-            filter.addAction(ACTION_CONNECTION_STATE_CHANGED);
-            //filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
-            //filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-            mContext.registerReceiver(foundDeviceReceiver, filter);
             bluetoothAdapter.startDiscovery();
         }
     }

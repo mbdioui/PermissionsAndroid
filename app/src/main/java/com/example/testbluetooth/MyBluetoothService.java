@@ -9,16 +9,16 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Scanner;
 
 public class MyBluetoothService {
     private static final String TAG = "MY_APP_DEBUG_TAG";
+
     private interface MessageConstants {
         int MESSAGE_READ = 0;
     }
 
     static public ConnectedThread makeClass(BluetoothSocket socket, Handler handler) {
-        Log.i("ConnectedThread","creating thread");
+        Log.i("ConnectedThread", "creating thread");
         return new ConnectedThread(socket, handler);
     }
 
@@ -26,7 +26,6 @@ public class MyBluetoothService {
         private InputStream mmInStream;
         private final BluetoothSocket mSocket;
         private Handler mmHandler;
-        private byte[] mmBuffer; // mmBuffer store for the stream
         private boolean connected;
 
 
@@ -40,41 +39,40 @@ public class MyBluetoothService {
                 Log.e(TAG, "Error occurred when creating input stream", e);
             }
             mmInStream = tmpIn;
-            connected=true;
+            connected = true;
         }
 
         public void run() {
-            mmBuffer = new byte[2048];
-            int numBytes; // bytes returned from read()
-            Log.d(TAG, "Thread  "+this.getId());
+            Log.d(TAG, "Thread  " + this.getId());
             while (connected) {
                 // Read from the InputStream.
-                if(mmInStream!=null){
-                    InputStreamReader isReader = new InputStreamReader(mmInStream);
-                    char charArray[] = new char[(int) 18];
-                    try {
-                       isReader.read(charArray);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                InputStreamReader isReader = new InputStreamReader(mmInStream);
+                try {
+                    if (mmInStream != null && isReader.ready()) {
+                        char[] charArray = new char[(int) 20];
+                        isReader.read(charArray);
+                        Message message = new Message();
+                        Bundle bundle = new Bundle();
+                        bundle.putString("code", String.valueOf(charArray));
+                        message.setData(bundle);
+                        mmHandler.sendMessage(message);
                     }
-                    Message message = new Message();
-                    Bundle bundle = new Bundle();
-                    bundle.putString("code", String.valueOf(charArray));
-                    message.setData(bundle);
-                    // Send the obtained bytes to the UI activity.
-                    mmHandler.sendMessage(message);
+                } catch (IOException e) {
+                    closeSocket();
+                    throw new RuntimeException(e);
                 }
             }
         }
 
         public synchronized void cancel() {
+            closeSocket();
+        }
+
+        public void closeSocket() {
             try {
                 mSocket.close();
-            } catch (IOException e) {
-                Log.e(TAG, "close() of connect socket failed", e);
-            }
-            catch (Exception e){
-                Log.e(TAG, "close() of connect socket failed", e);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
             }
         }
     }
